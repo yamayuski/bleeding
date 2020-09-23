@@ -16,11 +16,27 @@
             "role": "Author"
         }
     ],
-    "require": {},
+    "require": {
+        "php": "~8.0",
+        "guzzlehttp/psr7": "^1.6",
+        "laminas/laminas-diactoros": "^2.4",
+        "narrowspark/http-emitter": "^1.0",
+        "php-di/php-di": "^6.2",
+        "psr/container": "^1.0",
+        "psr/http-factory": "^1.0",
+        "psr/http-message": "^1.0",
+        "psr/http-server-handler": "^1.0",
+        "relay/relay": "~2.0"
+    },
     "autoload": {
         "psr-4": {
             "Bleeding\\": "Packages/"
-        }
+        },
+        "files": [
+            "Bleeding/Entrypoint/_404Handler.php",
+            "Bleeding/Entrypoint/resolver.php",
+            "Bleeding/Entrypoint/makeContainer.php"
+        ]
     },
     "config": {
         "sort-packages": true
