@@ -1,0 +1,88 @@
+version: '3'
+services:
+    nginx:
+        image: nginx:1.19.2
+        restart: always
+        ports:
+            - "443:443"
+        volumes:
+            - php-fpm-socket:/var/run/php-fpm:cached
+            - ${APP_PATH-.}/container/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+            - ${APP_PATH-.}/container/nginx/_wildcard.example.com.pem:/etc/nginx/cert.pem:ro
+            - ${APP_PATH-.}/container/nginx/_wildcard.example.com-key.pem:/etc/nginx/cert.key:ro
+        depends_on:
+            - web
+        networks:
+            - my_network
+
+    web:
+        build: .
+        restart: always
+        volumes:
+            - php-fpm-socket:/var/run/php-fpm:cached
+            - ${APP_PATH-.}:/opt/app/:cached
+            - ${APP_PATH-.}/container/web/www.conf:/usr/local/etc/php-fpm.d/zzz-www.conf:ro
+            - ${APP_PATH-.}/container/web/php.ini:/usr/local/etc/php/php.ini:ro
+        depends_on:
+            - dynamodb-local
+            - mysql
+        env_file:
+            - .env
+        networks:
+            - my_network
+
+    workspace:
+        build: .
+        working_dir: /opt/app
+        volumes:
+            - ${APP_PATH-.}:/opt/app/:cached
+            - ${APP_PATH-.}/container/web/php.ini:/usr/local/etc/php/php.ini:ro
+        env_file:
+            - .env
+        networks:
+            - my_network
+
+    mysql:
+        image: mysql:8.0.21
+        command: --default-authentication-plugin=mysql_native_password
+        restart: always
+        volumes:
+            - mysql:/var/lib/mysql:cached
+        environment:
+            MYSQL_ROOT_PASSWORD: secret
+            MYSQL_DATABASE: ${MYSQL_DATABASE-bleeding}
+            MYSQL_USER: ${MYSQL_USER-bleeding}
+            MYSQL_PASSWORD: ${MYSQL_PASSWORD-secret}
+        networks:
+            - my_network
+
+    adminer:
+        image: adminer:latest
+        restart: always
+        ports:
+            - "8081:8080"
+        environment:
+            ADMINER_DESIGN: pappu687
+            ADMINER_DEFAULT_SERVER: mysql
+        networks:
+            - my_network
+
+    dynamodb-local:
+        # persistent dynamodb local
+        build: ${APP_PATH-.}/container/dynamodb-local
+        restart: always
+        ports:
+            - "8082:8000"
+        volumes:
+            - dynamodb:/home/dynamodblocal/db:cached
+        networks:
+            - my_network
+
+
+networks:
+    my_network:
+volumes:
+    php-fpm-socket:
+    mysql:
+    dynamodb:
+        driver: local

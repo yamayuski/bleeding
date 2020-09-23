@@ -1,3 +1,11 @@
+# App
+
+.env
+_wildcard.example.com.pem
+_wildcard.example.com-key.pem
+vendor
+
+# End App
 
 # Created by https://www.toptal.com/developers/gitignore/api/code,macos,windows,linux
 # Edit at https://www.toptal.com/developers/gitignore?templates=code,macos,windows,linux

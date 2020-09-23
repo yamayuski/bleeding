@@ -1,0 +1,30 @@
+{
+    "name": "il-m-yamagishi/bleeding",
+    "description": "Bleeding Edge PHP 8 Framework",
+    "keywords": ["php8", "framework"],
+    "license": "Apache 2.0",
+    "homepage": "https://github.com/il-m-yamagishi/bleeding",
+    "support": {
+        "issues": "https://github.com/il-m-yamagishi/bleeding/issues",
+        "source": "https://github.com/il-m-yamagishi/bleeding"
+    },
+    "authors": [
+        {
+            "name": "Masaru Yamagishi",
+            "email": "m-yamagishi@infiniteloop.co.jp",
+            "homepage": "https://cafe-capy.net",
+            "role": "Author"
+        }
+    ],
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "Bleeding\\": "Packages/"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
