@@ -20,7 +20,7 @@ use function is_string;
  * @param ContainerInterface $container IoC Container
  * @return callable
  */
-function resolver(ContainerInterface $container): callable {
+function makeResolver(ContainerInterface $container): callable {
     /**
      * Check the entry is valid Middleware(RequestHandler).
      *

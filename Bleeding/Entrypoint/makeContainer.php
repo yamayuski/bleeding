@@ -7,9 +7,7 @@
 namespace Bleeding\Entrypoint;
 
 use DI\ContainerBuilder;
-use LogicException;
 use Psr\Container\ContainerInterface;
-use RuntimeException;
 
 /**
  * @return ContainerInterface

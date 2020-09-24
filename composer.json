@@ -17,9 +17,11 @@
         }
     ],
     "require": {
-        "php": "~8.0",
+        "php": "~8.0-dev",
+        "ext-json": "*",
         "guzzlehttp/psr7": "^1.6",
         "laminas/laminas-diactoros": "^2.4",
+        "monolog/monolog": "^2.1",
         "narrowspark/http-emitter": "^1.0",
         "php-di/php-di": "^6.2",
         "psr/container": "^1.0",
@@ -30,12 +32,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Bleeding\\": "Packages/"
+            "Bleeding\\": "Bleeding/",
+            "Edge\\": "Edge/"
         },
         "files": [
-            "Bleeding/Entrypoint/_404Handler.php",
-            "Bleeding/Entrypoint/resolver.php",
-            "Bleeding/Entrypoint/makeContainer.php"
+            "Bleeding/Entrypoint/makeContainer.php",
+            "Bleeding/Entrypoint/makeResolver.php"
         ]
     },
     "config": {
