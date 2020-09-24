@@ -1,8 +1,10 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * Entrypoint
  */
+
+declare(strict_types=1);
 
 require_once implode(DIRECTORY_SEPARATOR, [__DIR__, '..', '..', '..', 'vendor', 'autoload.php']);
 

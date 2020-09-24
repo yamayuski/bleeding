@@ -1,8 +1,10 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
- * Middleware Resolver
+ * 404 Not found Handler
  */
+
+declare(strict_types=1);
 
 namespace Bleeding\Entrypoint;
 
@@ -16,7 +18,7 @@ use RuntimeException;
  * @param ResponseFactoryInterface $responseFactory
  * @return callable
  */
-return function(ResponseFactoryInterface $responseFactory): callable {
+return function (ResponseFactoryInterface $responseFactory): callable {
     /**
      * @param ServerRequestInterface $request
      * @return ResponseInterface

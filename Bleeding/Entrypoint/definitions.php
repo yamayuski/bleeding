@@ -1,8 +1,10 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * Entrypoint DI Definitions
  */
+
+declare(strict_types=1);
 
 namespace Bleeding\Entrypoint;
 

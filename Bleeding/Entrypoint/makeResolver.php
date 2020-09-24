@@ -1,8 +1,10 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * Middleware Resolver
  */
+
+declare(strict_types=1);
 
 namespace Bleeding\Entrypoint;
 
@@ -20,7 +22,8 @@ use function is_string;
  * @param ContainerInterface $container IoC Container
  * @return callable
  */
-function makeResolver(ContainerInterface $container): callable {
+function makeResolver(ContainerInterface $container): callable
+{
     /**
      * Check the entry is valid Middleware(RequestHandler).
      *
@@ -51,4 +54,4 @@ function makeResolver(ContainerInterface $container): callable {
         }
         throw new RuntimeException('Cannot resolve Middleware entry: ' . $entry);
     };
-};
+}

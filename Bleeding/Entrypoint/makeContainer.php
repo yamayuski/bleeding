@@ -1,8 +1,10 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
- * Middleware Resolver
+ * Container Builder
  */
+
+declare(strict_types=1);
 
 namespace Bleeding\Entrypoint;
 
@@ -12,10 +14,11 @@ use Psr\Container\ContainerInterface;
 /**
  * @return ContainerInterface
  */
-function makeContainer(): ContainerInterface {
+function makeContainer(): ContainerInterface
+{
     $builder = new ContainerBuilder();
 
     $builder->addDefinitions(__DIR__ . DIRECTORY_SEPARATOR . 'definitions.php');
 
     return $builder->build();
-};
+}

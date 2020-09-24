@@ -1,8 +1,10 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
- * Middleware Resolver
+ * 200 ok Healthcheck handler
  */
+
+declare(strict_types=1);
 
 namespace Bleeding\Entrypoint;
 
@@ -33,7 +35,14 @@ return function (StreamFactoryInterface $streamFactory, ResponseFactoryInterface
      * @param mixed $next
      * @return ResponseInterface
      */
-    return function (ServerRequestInterface $request, callable $next) use ($streamFactory, $responseFactory, $okHandler): ResponseInterface {
+    return function (
+        ServerRequestInterface $request,
+        callable $next
+    ) use (
+        $streamFactory,
+        $responseFactory,
+        $okHandler
+    ): ResponseInterface {
         if ($request->getUri()->getPath() !== '/') {
             return $next($request);
         }

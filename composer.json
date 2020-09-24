@@ -40,9 +40,19 @@
             "Bleeding/Entrypoint/makeResolver.php"
         ]
     },
+    "scripts": {
+        "phpcs": "phpcs",
+        "phpcbf": "phpcbf"
+    },
+    "scripts-descriptions": {
+        "phpcs": "PHP CodeSniffer for PSR-12"
+    },
     "config": {
         "sort-packages": true
     },
     "minimum-stability": "dev",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "require-dev": {
+        "squizlabs/php_codesniffer": "^3.5"
+    }
 }
