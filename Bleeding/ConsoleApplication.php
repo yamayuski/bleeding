@@ -28,5 +28,7 @@ class ConsoleApplication implements Application
     public function run(): void
     {
         $container = $this->createContainer();
+
+        // TODO: implementation
     }
 }

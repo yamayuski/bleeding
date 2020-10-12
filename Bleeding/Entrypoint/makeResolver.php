@@ -48,7 +48,7 @@ function makeResolver(ContainerInterface $container): callable
             if (!$container->has($entry)) {
                 throw new LogicException('Unknown Middleware in Container: ' . $entry);
             }
-            $entryInstance = new $container->get($entry);
+            $entryInstance = $container->get($entry);
             assert($isValidInstance($entryInstance), 'Assert $entryInstance is valid middleware');
             return $entryInstance;
         }

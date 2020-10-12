@@ -22,6 +22,9 @@ use Psr\Http\Server\RequestHandlerInterface;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use ReflectionFunction;
+use Relay\RelayBuilder;
+
+use function Bleeding\Entrypoint\makeResolver;
 
 class RoutingResolver implements RequestHandlerInterface
 {
@@ -41,46 +44,6 @@ class RoutingResolver implements RequestHandlerInterface
     }
 
     /**
-     * List up routes
-     *
-     * @todo Caching
-     * @return array
-     */
-    protected function listUp(): array
-    {
-        $dirIterator = new RecursiveDirectoryIterator($this->baseDir);
-        $iterator = new RecursiveIteratorIterator($dirIterator, RecursiveIteratorIterator::SELF_FIRST);
-
-        $paths = [];
-
-        foreach ($iterator as $file) {
-            if (!str_ends_with($file->getBaseName(), '.php')) {
-                continue;
-            }
-
-            $func = require $file->getRealPath();
-            assert(is_callable($func), 'Assert controller is callable');
-
-            $ref = new ReflectionFunction($func);
-            assert(0 < count($ref->getAttributes()), 'Assert controller has attribute');
-
-            if (0 < count($ref->getAttributes(Get::class))) {
-                $attr = $ref->getAttributes(Get::class)[0]->newInstance();
-                $path = rtrim($attr->getPath(), '/');
-                assert(!isset($paths[$path]['GET']), 'Assert path not conflicted');
-                $paths[$path]['GET'] = $func;
-            } elseif (0 < count($ref->getAttributes(Post::class))) {
-                $attr = $ref->getAttributes(Post::class)[0]->newInstance();
-                $path = rtrim($attr->getPath(), '/');
-                assert(!isset($paths[$path]['POST']), 'Assert path not conflicted');
-                $paths[$path]['POST'] = $func;
-            }
-        }
-
-        return $paths;
-    }
-
-    /**
      * Resolve path
      *
      * @param ServerRequestInterface $request
@@ -88,9 +51,9 @@ class RoutingResolver implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $path = rtrim($request->getUri()->getPath(), '/');
+        $path = '/' . trim($request->getUri()->getPath(), '/');
         $method = strtoupper($request->getMethod());
-        $paths = $this->listUp();
+        $paths = CollectRoute::collect($this->baseDir);
 
         if (!array_key_exists($path, $paths)) {
             throw NotFoundException::createWithoutCode('Path not found', compact('path', 'method'));
@@ -101,12 +64,29 @@ class RoutingResolver implements RequestHandlerInterface
             throw MethodNotAllowedException::createWithoutCode('HTTP method not allowed', compact('path', 'method'));
         }
 
-        $result = $this->container->call($paths[$path][$method], compact('request'));
+        $route = $paths[$path][$method];
 
-        $response = $this->container->get(ResponseFactoryInterface::class)->createResponse(200, 'ok');
-        if (is_array($result) || $result instanceof JsonSerializable) {
-            $response->getBody()->write(json_encode($result));
+        $queue = [];
+        foreach ($route->getMiddlewares() as $middleware) {
+            $queue[] = $middleware;
         }
-        return $response;
+
+        $container = $this->container;
+
+        // Main controller invoke
+        $queue[] = function($request) use ($route, $container) {
+            $result = $container->call($route->getFunc(), compact('request'));
+
+            $response = $container->get(ResponseFactoryInterface::class)->createResponse(200);
+            if (is_array($result) || $result instanceof JsonSerializable) {
+                $response->getBody()->write(json_encode($result));
+            }
+            return $response->withHeader('Content-Type', 'application/json; charset=UTF-8');
+        };
+
+        $relayBuilder = new RelayBuilder(makeResolver($container));
+        return $relayBuilder
+            ->newInstance($queue)
+            ->handle($request);
     }
 }
