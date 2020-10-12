@@ -1,0 +1,24 @@
+#!/usr/bin/env php
+<?php
+
+/**
+ * @author Masaru Yamagishi <m-yamagishi@infiniteloop.co.jp>
+ * @copyright 2020- Masaru Yamagishi
+ */
+
+declare(strict_types=1);
+
+// autoload
+require implode(DIRECTORY_SEPARATOR, [__DIR__, 'vendor', 'autoload.php']);
+
+use Psr\Container\ContainerInterface;
+
+// run application
+$app = new class extends Bleeding\ConsoleApplication {
+    public function createContainer(): ContainerInterface
+    {
+        return Edge\Bootstrap\CotnainerFactory::create();
+    }
+};
+
+$app->run();

@@ -19,7 +19,6 @@
     "require": {
         "php": "~8.0-dev",
         "ext-json": "*",
-        "guzzlehttp/psr7": "^1.6",
         "laminas/laminas-diactoros": "^2.4",
         "monolog/monolog": "^2.1",
         "narrowspark/http-emitter": "^1.0",
@@ -30,13 +29,15 @@
         "psr/http-server-handler": "^1.0",
         "relay/relay": "~2.0"
     },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "^3.5"
+    },
     "autoload": {
         "psr-4": {
             "Bleeding\\": "Bleeding/",
             "Edge\\": "Edge/"
         },
         "files": [
-            "Bleeding/Entrypoint/makeContainer.php",
             "Bleeding/Entrypoint/makeResolver.php"
         ]
     },
@@ -45,14 +46,12 @@
         "phpcbf": "phpcbf"
     },
     "scripts-descriptions": {
-        "phpcs": "PHP CodeSniffer for PSR-12"
+        "phpcs": "PHP CodeSniffer for PSR-12",
+        "phpcbf": "Autofix to PSR-12-valid"
     },
     "config": {
         "sort-packages": true
     },
     "minimum-stability": "dev",
-    "prefer-stable": true,
-    "require-dev": {
-        "squizlabs/php_codesniffer": "^3.5"
-    }
+    "prefer-stable": true
 }

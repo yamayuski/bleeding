@@ -4,7 +4,6 @@
 
     <file>Bleeding</file>
     <file>Edge</file>
-    <file>tests</file>
 
     <!-- Don't hide tokenizer exceptions -->
     <rule ref="PSR12" />

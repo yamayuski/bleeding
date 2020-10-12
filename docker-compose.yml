@@ -24,7 +24,6 @@ services:
             - ${APP_PATH-.}/container/web/www.conf:/usr/local/etc/php-fpm.d/zzz-www.conf:ro
             - ${APP_PATH-.}/container/web/php.ini:/usr/local/etc/php/php.ini:ro
         depends_on:
-            - dynamodb-local
             - mysql
         env_file:
             - .env
@@ -67,22 +66,8 @@ services:
         networks:
             - my_network
 
-    dynamodb-local:
-        # persistent dynamodb local
-        build: ${APP_PATH-.}/container/dynamodb-local
-        restart: always
-        ports:
-            - "8082:8000"
-        volumes:
-            - dynamodb:/home/dynamodblocal/db:cached
-        networks:
-            - my_network
-
-
 networks:
     my_network:
 volumes:
     php-fpm-socket:
     mysql:
-    dynamodb:
-        driver: local

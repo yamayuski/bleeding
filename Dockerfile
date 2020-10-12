@@ -30,4 +30,4 @@ VOLUME ["/var/run/php-fpm"]
 VOLUME ["/usr/src/bleeding"]
 
 COPY . /usr/src/bleeding
-WORKDIR /usr/src/bleeding/Bleeding/Entrypoint/public
+WORKDIR /usr/src/bleeding/public
