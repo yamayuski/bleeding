@@ -27,5 +27,7 @@ final class ContainerFactory extends ContainerFactoryBase
         $resolvePath = function (...$args): string {
             return implode(DIRECTORY_SEPARATOR, [__DIR__, '..', ...$args, 'definitions.php']);
         };
+
+        $builder->addDefinitions($resolvePath('Repositories'));
     }
 }

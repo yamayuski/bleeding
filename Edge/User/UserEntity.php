@@ -41,4 +41,12 @@ final class UserEntity implements JsonSerializable
             'username' => $this->username,
         ];
     }
+
+    /**
+     * @return string
+     */
+    public function getHashedPassword(): string
+    {
+        return $this->hashedPassword;
+    }
 }

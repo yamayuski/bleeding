@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace Edge\User;
 
 use Bleeding\Exceptions\RuntimeException;
+use DI\Attribute\Inject;
 
 use function password_hash;
 
@@ -20,6 +21,9 @@ use const PASSWORD_DEFAULT;
  */
 final class LoginService
 {
+    #[Inject]
+    private IUserRepository $repo;
+
     /**
      * @param string $username
      * @param string $rawPassword
@@ -27,14 +31,16 @@ final class LoginService
      */
     public function __invoke(string $username, string $rawPassword): UserEntity
     {
-        $hashedPassword = password_hash($rawPassword, PASSWORD_DEFAULT);
+        $user = $this->repo->findByName($username);
 
-        if ($username !== 'test') {
-            throw RuntimeException::create('ユーザ名またはパスワードが間違っています', 1);
-        } elseif (!password_verify($rawPassword, '$2y$10$R0oLxUu4tenpPWdeGyYELeEoO5SOTMSY7sNQ723aYXVd0uC.l4SEe')) {
+        if (is_null($user)) {
             throw RuntimeException::create('ユーザ名またはパスワードが間違っています', 1);
         }
 
-        return new UserEntity($username, $hashedPassword);
+        if (!password_verify($rawPassword, $user->getHashedPassword())) {
+            throw RuntimeException::create('ユーザ名またはパスワードが間違っています', 1);
+        }
+
+        return $user;
     }
 }
