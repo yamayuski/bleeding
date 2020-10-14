@@ -29,6 +29,7 @@
         "psr/http-message": "^1.0",
         "psr/http-server-handler": "^1.0",
         "relay/relay": "~2.0",
+        "respect/validation": "^2.1",
         "riverline/multipart-parser": "^2.0"
     },
     "require-dev": {

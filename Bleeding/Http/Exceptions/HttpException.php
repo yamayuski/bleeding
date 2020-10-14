@@ -16,7 +16,7 @@ use Throwable;
  * Raw HTTP Exception
  * @package Bleeding\Http\Exceptions
  */
-abstract class HttpException extends RuntimeException
+class HttpException extends RuntimeException
 {
     protected const CODE = 500;
 

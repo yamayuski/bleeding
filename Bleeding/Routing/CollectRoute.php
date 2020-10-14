@@ -43,6 +43,7 @@ final class CollectRoute
 
         foreach ($iterator as $file) {
             $route = self::checkFile($file);
+
             if (!is_null($route)) {
                 assert(!isset($paths[$route->getPath()][$route->getMethod()]), 'path is not conflicted');
                 $paths[$route->getPath()][$route->getMethod()] = $route;

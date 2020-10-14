@@ -2,7 +2,7 @@
 
 ## Introduction
 
-- PHP 8 Ready
+- PHP 8 Ready!
 - Ultra thin framework
     - No [nikic/fast-route](https://github.com/nikic/FastRoute)
     - No route parameters
@@ -13,9 +13,9 @@
     - returns only `application/json`
 - PHP Standard Recommendation(PSR) first
     - PSR-3 Log ready, powered by [monolog](https://github.com/Seldaek/monolog)
-    - PSR-4 Autoload ready, powered by [composer](https://getcomposer.org/)
+    - PSR-4 Autoload ready, powered by [composer v2](https://getcomposer.org/)
     - PSR-7, PSR-17 HTTP ready, powered by [laminas-diactoros](https://docs.laminas.dev/laminas-diactoros/)
-    - PSR-11 DI ready, powered by [PHP-DI 6](https://php-di.org/)
+    - PSR-11 DI ready, powered by [PHP-DI 7(beta)](https://php-di.org/)
     - PSR-12 ready, powered by [PHP CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer)
     - PSR-15 RequestHandler, Middleware ready, powered by [Relay](http://relayphp.com/)
 
