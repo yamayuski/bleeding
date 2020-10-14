@@ -8,6 +8,8 @@
 
 declare(strict_types=1);
 
+define('ENTRY_TIME', microtime(true));
+
 // autoload
 require implode(DIRECTORY_SEPARATOR, [__DIR__, 'vendor', 'autoload.php']);
 

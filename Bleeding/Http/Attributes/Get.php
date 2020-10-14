@@ -41,4 +41,14 @@ class Get
     {
         return $this->path;
     }
+
+    /**
+     * get Method name string
+     *
+     * @return string
+     */
+    public function getMethodName(): string
+    {
+        return 'GET';
+    }
 }

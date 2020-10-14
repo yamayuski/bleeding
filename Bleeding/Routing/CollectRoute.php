@@ -9,28 +9,27 @@ declare(strict_types=1);
 
 namespace Bleeding\Routing;
 
-use Bleeding\Http\Attributes\AfterMiddleware;
-use Bleeding\Http\Attributes\BeforeMiddleware;
 use Bleeding\Http\Attributes\Get;
+use Bleeding\Http\Attributes\Middleware;
 use Bleeding\Http\Attributes\Post;
-use Bleeding\Http\Exceptions\MethodNotAllowedException;
-use Bleeding\Http\Exceptions\NotFoundException;
-use DI\Container;
-use JsonSerializable;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Message\ResponseFactoryInterface;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Server\RequestHandlerInterface;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use ReflectionFunction;
+use SplFileInfo;
 
+use function is_callable;
+use function is_null;
+use function trim;
+
+/**
+ * @package Bleeding\Routing
+ */
 final class CollectRoute
 {
     /**
-     * List up routes
+     * List up all routes
      *
-     * @todo Caching
+     * @todo PHP file caching
      * @return array
      */
     public static function collect(string $baseDir): array
@@ -43,36 +42,53 @@ final class CollectRoute
         $paths = [];
 
         foreach ($iterator as $file) {
-            if (!str_ends_with($file->getBaseName(), '.php')) {
-                continue;
-            }
-
-            $func = require $file->getRealPath();
-            assert(is_callable($func), 'Assert controller is callable');
-
-            $ref = new ReflectionFunction($func);
-            assert(0 < count($ref->getAttributes()), 'Assert controller has attribute');
-
-            $middlewares = [];
-            if (0 < count($ref->getAttributes(Middleware::class))) {
-                $attr = $ref->getAttributes(Middleware::class)[0]->newInstance();
-                $middlewares = $attr->getMiddlewareNames();
-                assert(array_reduce($middlewares, fn ($carry, $item) => ($carry && class_exists($item)), true));
-            }
-
-            if (0 < count($ref->getAttributes(Get::class))) {
-                $attr = $ref->getAttributes(Get::class)[0]->newInstance();
-                $path = '/' . trim($attr->getPath(), '/');
-                assert(!isset($paths[$path]['GET']), 'Assert path not conflicted');
-                $paths[$path]['GET'] = new Route($path, 'GET', $func, $file->getRealPath(), $middlewares);
-            } elseif (0 < count($ref->getAttributes(Post::class))) {
-                $attr = $ref->getAttributes(Post::class)[0]->newInstance();
-                $path = '/' . trim($attr->getPath(), '/');
-                assert(!isset($paths[$path]['POST']), 'Assert path not conflicted');
-                $paths[$path]['POST'] = new Route($path, 'POST', $func, $file->getRealPath(), $middlewares);
+            $route = self::checkFile($file);
+            if (!is_null($route)) {
+                assert(!isset($paths[$route->getPath()][$route->getMethod()]), 'path is not conflicted');
+                $paths[$route->getPath()][$route->getMethod()] = $route;
             }
         }
 
         return $paths;
+    }
+
+    /**
+     * @internal
+     * @param SplFileInfo $file
+     * @return ?Route
+     */
+    private static function checkFile(SplFileInfo $file): ?Route
+    {
+        if (!str_ends_with($file->getBaseName(), '.php')) {
+            return null;
+        }
+
+        $func = require $file->getRealPath();
+        assert(is_callable($func), 'controller is callable');
+
+        $ref = new ReflectionFunction($func);
+        assert(0 < count($ref->getAttributes()), 'controller has attribute');
+
+        $middlewares = [];
+        if (0 < count($ref->getAttributes(Middleware::class))) {
+            $attr = $ref->getAttributes(Middleware::class)[0]->newInstance();
+            $middlewares = $attr->getMiddlewareNames();
+            assert(
+                array_reduce($middlewares, fn ($carry, $item) => ($carry && class_exists($item)), true),
+                'All middleware class exists'
+            );
+        }
+
+        $attr = null;
+        if (0 < count($ref->getAttributes(Get::class))) {
+            $attr = $ref->getAttributes(Get::class)[0]->newInstance();
+        } elseif (0 < count($ref->getAttributes(Post::class))) {
+            $attr = $ref->getAttributes(Post::class)[0]->newInstance();
+        } else {
+            return null;
+        }
+
+        $path = '/' . trim($attr->getPath(), '/');
+        return new Route($path, $attr->getMethodName(), $func, $file->getRealPath(), $middlewares);
     }
 }

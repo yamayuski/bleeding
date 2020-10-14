@@ -20,7 +20,7 @@ interface ServerRequestFactoryInterface
     /**
      * Create PSR-7 ServerRequest from globals
      *
-     * @return ServerRequest
+     * @return ServerRequestInterface
      */
     public function createFromGlobals(): ServerRequestInterface;
 }

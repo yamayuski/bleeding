@@ -6,7 +6,7 @@
 
 declare(strict_types=1);
 
-namespace Bleeding\Entrypoint;
+namespace Bleeding;
 
 use LogicException;
 use Psr\Container\ContainerInterface;

@@ -10,12 +10,15 @@ declare(strict_types=1);
 namespace Bleeding;
 
 use Bleeding\Http\ServerRequestFactoryInterface;
+use LogicException;
 use Narrowspark\HttpEmitter\SapiEmitter;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Relay\RelayBuilder;
 
-use function Bleeding\Entrypoint\makeResolver;
+use function Bleeding\makeResolver;
+
+use const PHP_VERSION_ID;
 
 /**
  * @package Bleeding
@@ -31,41 +34,53 @@ abstract class WebApplication implements Application
     }
 
     /**
-     * Creates queue processes Request and Response
-     * @param ServerRequestInterface $request
+     * Creates middleware queue processes Request and Response
+     *
      * @param ContainerInterface $container
      * @return (MiddlewareInterface|RequestHandlerInterface)[]
      */
-    public abstract function createProcessQueue(ServerRequestInterface $request, ContainerInterface $container): array;
+    abstract public function createProcessQueue(ContainerInterface $container): array;
 
     /**
      * {@inheritdoc}
      */
-    public function run(): void
+    final public function run(): void
     {
+        if (PHP_VERSION_ID < 80000) {
+            throw new LogicException('Bleeding Framework must run abobe PHP 8');
+        }
         $this->setErrorHandler();
         $container = $this->createContainer();
+        assert($container->has(ServerRequestFactoryInterface::class), 'exists own ServerRequestFactory');
         $serverRequestFactory = $container->get(ServerRequestFactoryInterface::class);
 
         $request = $serverRequestFactory->createFromGlobals();
 
-        $queue = $this->createProcessQueue($request, $container);
+        $queue = $this->createProcessQueue($container);
+        assert(0 < count($queue), 'Assert queue has filled');
 
         $relayBuilder = new RelayBuilder(makeResolver($container));
         $response = $relayBuilder
             ->newInstance($queue)
             ->handle($request);
         (new SapiEmitter())->emit($response);
+
+        restore_error_handler();
     }
 
-    public function setErrorHandler(): void
+    /**
+     * Set global error handler
+     */
+    protected function setErrorHandler(): void
     {
         set_error_handler(function (
             int $errno,
             string $errstr,
             string $errfile,
-            int $errline) {
-            return true;
+            int $errline
+        ) {
+            // TODO: implementation
+            return false;
         });
     }
 }

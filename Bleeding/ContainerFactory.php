@@ -27,10 +27,11 @@ class ContainerFactory
     public static function create(): ContainerInterface
     {
         $builder = new ContainerBuilder();
+        $builder->useAttributes(true);
 
         static::addDefinitions($builder);
 
-        // TODO: optimization
+        // TODO: optimization options
 
         return $builder->build();
     }

@@ -7,6 +7,8 @@
 
 declare(strict_types=1);
 
+define('ENTRY_TIME', microtime(true));
+
 // autoload
 require implode(DIRECTORY_SEPARATOR, [__DIR__, '..', 'vendor', 'autoload.php']);
 
@@ -18,12 +20,18 @@ use Psr\Http\Message\ServerRequestInterface;
 
 // run application
 $app = new class extends WebApplication {
+    /**
+     * {@inheritdoc}
+     */
     public function createContainer(): ContainerInterface
     {
         return ContainerFactory::create();
     }
 
-    public function createProcessQueue(ServerRequestInterface $request, ContainerInterface $container): array
+    /**
+     * {@inheritdoc}
+     */
+    public function createProcessQueue(ContainerInterface $container): array
     {
         $baseDir = implode(DIRECTORY_SEPARATOR, [__DIR__, '..', 'Edge', 'Controllers']);
 

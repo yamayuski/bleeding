@@ -13,7 +13,7 @@ namespace Bleeding\Http\Exceptions;
  * 404 NotFound HTTP Exception
  * @package Bleeding\Http\Exceptions
  */
-class MethodNotAllowedException extends HttpException
+final class MethodNotAllowedException extends HttpClientException
 {
     /** @var int Exception code */
     protected const CODE = 405;

@@ -20,10 +20,10 @@ use function strtoupper;
 final class Route
 {
     /** @var string */
-    private string $method;
+    private string $path;
 
     /** @var string */
-    private string $path;
+    private string $method;
 
     /** @var callable */
     private $func;
@@ -41,20 +41,11 @@ final class Route
         string $filePath,
         $middlewares = []
     ) {
-        $this->method = strtoupper($method);
         $this->path = '/' . trim($path, '/');
+        $this->method = strtoupper($method);
         $this->func = $func;
         $this->filePath = $filePath;
         $this->middlewares = (array)$middlewares;
-    }
-
-    /**
-     * get HTTP method
-     * @return string
-     */
-    public function getMethod(): string
-    {
-        return $this->method;
     }
 
     /**
@@ -64,6 +55,15 @@ final class Route
     public function getPath(): string
     {
         return $this->path;
+    }
+
+    /**
+     * get HTTP method
+     * @return string
+     */
+    public function getMethod(): string
+    {
+        return $this->method;
     }
 
     /**

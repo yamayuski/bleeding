@@ -9,18 +9,10 @@ declare(strict_types=1);
 
 namespace Bleeding\Http\Middlewares;
 
-use Bleeding\Exceptions\RuntimeException;
-use Bleeding\Http\Exceptions\HttpClientException;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Riverline\MultiPartParser\Converters\PSR7;
-
-use function json_decode;
-use function parse_str;
-use function str_ends_with;
-use function str_starts_with;
 
 /**
  * Parse request body

@@ -34,6 +34,8 @@ final class ParseBodyMiddleware implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $contentType = $request->getHeaderLine('Content-Type');
+
+        // TODO: use match statement
         if (str_ends_with($contentType, 'json')) {
             $request = $this->parseJson($request);
         } elseif (str_starts_with($contentType, 'multipart')) {

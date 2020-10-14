@@ -24,7 +24,10 @@ use RecursiveIteratorIterator;
 use ReflectionFunction;
 use Relay\RelayBuilder;
 
-use function Bleeding\Entrypoint\makeResolver;
+use function array_key_exists;
+use function Bleeding\makeResolver;
+use function strtoupper;
+use function trim;
 
 class RoutingResolver implements RequestHandlerInterface
 {
@@ -74,11 +77,18 @@ class RoutingResolver implements RequestHandlerInterface
         $container = $this->container;
 
         // Main controller invoke
-        $queue[] = function($request) use ($route, $container) {
+        $queue[] = function ($request) use ($route, $container) {
+            /** @var array|JsonSerializable|ResponseInterface $result */
             $result = $container->call($route->getFunc(), compact('request'));
 
+            if ($result instanceof ResponseInterface) {
+                return $response;
+            }
+
             $response = $container->get(ResponseFactoryInterface::class)->createResponse(200);
-            if (is_array($result) || $result instanceof JsonSerializable) {
+            if (is_null($result) || $result === '') {
+                $response->getBody()->write('{}');
+            } elseif (is_array($result) || $result instanceof JsonSerializable) {
                 $response->getBody()->write(json_encode($result));
             }
             return $response->withHeader('Content-Type', 'application/json; charset=UTF-8');
