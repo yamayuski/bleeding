@@ -22,6 +22,9 @@ use Throwable;
  */
 final class ProcessErrorMiddleware implements MiddlewareInterface
 {
+    /** @var ResponseFactoryInterface $responseFactory */
+    private $responseFactory;
+
     /**
      * constructor
      *

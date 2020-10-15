@@ -24,7 +24,7 @@ final class ContainerFactory extends ContainerFactoryBase
     {
         parent::addDefinitions($builder);
 
-        $resolvePath = function (...$args): string {
+        $resolvePath = function (string ...$args): string {
             return implode(DIRECTORY_SEPARATOR, [__DIR__, '..', ...$args, 'definitions.php']);
         };
 

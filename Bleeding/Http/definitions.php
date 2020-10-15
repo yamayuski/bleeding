@@ -14,10 +14,10 @@ use Laminas\Diactoros\StreamFactory;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 
-use function DI\create;
+use function DI\get;
 
 return [
-    ServerRequestFactoryInterface::class => create(ServerRequestFactory::class),
-    ResponseFactoryInterface::class => create(ResponseFactory::class),
-    StreamFactoryInterface::class => create(StreamFactory::class),
+    ServerRequestFactoryInterface::class => get(ServerRequestFactory::class),
+    ResponseFactoryInterface::class => get(ResponseFactory::class),
+    StreamFactoryInterface::class => get(StreamFactory::class),
 ];

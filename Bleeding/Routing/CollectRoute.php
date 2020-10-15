@@ -70,12 +70,13 @@ final class CollectRoute
         $ref = new ReflectionFunction($func);
         assert(0 < count($ref->getAttributes()), 'controller has attribute');
 
+        /** @var string[] $middlewares */
         $middlewares = [];
         if (0 < count($ref->getAttributes(Middleware::class))) {
             $attr = $ref->getAttributes(Middleware::class)[0]->newInstance();
             $middlewares = $attr->getMiddlewareNames();
             assert(
-                array_reduce($middlewares, fn ($carry, $item) => ($carry && class_exists($item)), true),
+                array_reduce($middlewares, fn (bool $carry, string $item) => ($carry && class_exists($item)), true),
                 'All middleware class exists'
             );
         }

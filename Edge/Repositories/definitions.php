@@ -9,11 +9,10 @@ declare(strict_types=1);
 
 namespace Edge\Repositories;
 
-use Edge\Repositories\InMemoryUserRepository;
 use Edge\User\IUserRepository;
 
-use function DI\create;
+use function DI\get;
 
 return [
-    IUserRepository::class => create(InMemoryUserRepository::class),
+    IUserRepository::class => get(InMemoryUserRepository::class),
 ];

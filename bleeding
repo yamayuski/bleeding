@@ -19,7 +19,7 @@ use Psr\Container\ContainerInterface;
 $app = new class extends Bleeding\ConsoleApplication {
     public function createContainer(): ContainerInterface
     {
-        return Edge\Bootstrap\CotnainerFactory::create();
+        return Edge\Bootstrap\ContainerFactory::create();
     }
 };
 

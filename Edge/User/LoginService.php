@@ -12,9 +12,7 @@ namespace Edge\User;
 use Bleeding\Exceptions\RuntimeException;
 use DI\Attribute\Inject;
 
-use function password_hash;
-
-use const PASSWORD_DEFAULT;
+use function password_verify;
 
 /**
  * @package Edge\User
@@ -27,7 +25,7 @@ final class LoginService
     /**
      * @param string $username
      * @param string $rawPassword
-     * @return User
+     * @return UserEntity
      */
     public function __invoke(string $username, string $rawPassword): UserEntity
     {

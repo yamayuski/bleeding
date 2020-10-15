@@ -26,7 +26,7 @@ final class Clock
      */
     public static function entry(): ChronosInterface
     {
-        $timestamp = ENTRY_TIME;
+        $timestamp = defined('ENTRY_TIME') ? ENTRY_TIME : time();
 
         return new Chronos('@' . intval($timestamp));
     }

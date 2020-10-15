@@ -77,12 +77,12 @@ class RoutingResolver implements RequestHandlerInterface
         $container = $this->container;
 
         // Main controller invoke
-        $queue[] = function ($request) use ($route, $container) {
-            /** @var array|JsonSerializable|ResponseInterface $result */
+        $queue[] = function (ServerRequestInterface $request) use ($route, $container): ResponseInterface {
+            /** @var array|JsonSerializable|ResponseInterface|string|null $result */
             $result = $container->call($route->getFunc(), compact('request'));
 
             if ($result instanceof ResponseInterface) {
-                return $response;
+                return $result;
             }
 
             $response = $container->get(ResponseFactoryInterface::class)->createResponse(200);

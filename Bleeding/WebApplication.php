@@ -14,6 +14,8 @@ use LogicException;
 use Narrowspark\HttpEmitter\SapiEmitter;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use Relay\RelayBuilder;
 
 use function Bleeding\makeResolver;
