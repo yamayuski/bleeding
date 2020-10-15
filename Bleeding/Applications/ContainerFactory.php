@@ -7,24 +7,24 @@
 
 declare(strict_types=1);
 
-namespace Bleeding;
+namespace Bleeding\Applications;
 
 use Bleeding\Http\HttpServiceProvider;
+use DI\Container;
 use DI\ContainerBuilder;
-use Psr\Container\ContainerInterface;
 
 /**
  * ContainerFactory
- * @package Bleeding
+ * @package Bleeding\Applications
  */
 class ContainerFactory
 {
     /**
      * Create Container
      *
-     * @return ContainerInterface
+     * @return Container
      */
-    public static function create(): ContainerInterface
+    public static function create(): Container
     {
         $builder = new ContainerBuilder();
         $builder->useAttributes(true);
@@ -42,12 +42,19 @@ class ContainerFactory
      * @param ContainerBuilder $builder
      * @return void
      */
-    public static function addDefinitions(ContainerBuilder $builder): void
+    protected static function addDefinitions(ContainerBuilder $builder): void
     {
-        $resolvePath = function (...$args): string {
-            return implode(DIRECTORY_SEPARATOR, [__DIR__, ...$args, 'definitions.php']);
-        };
+        $builder->addDefinitions(self::resolveDefinitionsPath('Bleeding', 'Http'));
+    }
 
-        $builder->addDefinitions($resolvePath('Http'));
+    /**
+     * resolve definitions path
+     *
+     * @param string[] $args
+     * @return string
+     */
+    protected static function resolveDefinitionsPath(string ...$args): string
+    {
+        return implode(DIRECTORY_SEPARATOR, [__DIR__, '..', '..', ...$args, 'definitions.php']);
     }
 }

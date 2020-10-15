@@ -18,6 +18,7 @@ use Throwable;
  */
 class HttpException extends RuntimeException
 {
+    /** @var int CODE */
     protected const CODE = 500;
 
     /**

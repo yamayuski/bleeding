@@ -7,22 +7,22 @@
 
 declare(strict_types=1);
 
-namespace Bleeding;
+namespace Bleeding\Applications;
 
-use Psr\Container\ContainerInterface;
+use DI\Container;
 
 /**
  * Main running application interface
- * @package Bleeding
+ * @package Bleeding\Applications
  */
 interface Application
 {
     /**
      * Create container
      *
-     * @return ContainerInterface
+     * @return Container
      */
-    public function createContainer(): ContainerInterface;
+    public function createContainer(): Container;
 
     /**
      * Run application

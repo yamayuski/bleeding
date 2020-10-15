@@ -7,12 +7,12 @@
 
 declare(strict_types=1);
 
-namespace Bleeding;
+namespace Bleeding\Applications;
 
 use Bleeding\Http\ServerRequestFactoryInterface;
+use DI\Container;
 use LogicException;
 use Narrowspark\HttpEmitter\SapiEmitter;
-use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -23,14 +23,14 @@ use function Bleeding\makeResolver;
 use const PHP_VERSION_ID;
 
 /**
- * @package Bleeding
+ * @package Bleeding\Applications
  */
 abstract class WebApplication implements Application
 {
     /**
      * {@inheritdoc}
      */
-    public function createContainer(): ContainerInterface
+    public function createContainer(): Container
     {
         return ContainerFactory::create();
     }
@@ -38,10 +38,10 @@ abstract class WebApplication implements Application
     /**
      * Creates middleware queue processes Request and Response
      *
-     * @param ContainerInterface $container
-     * @return (MiddlewareInterface|RequestHandlerInterface)[]
+     * @param Container $container
+     * @return (MiddlewareInterface|RequestHandlerInterface|string)[]
      */
-    abstract public function createProcessQueue(ContainerInterface $container): array;
+    abstract public function createProcessQueue(Container $container): array;
 
     /**
      * {@inheritdoc}

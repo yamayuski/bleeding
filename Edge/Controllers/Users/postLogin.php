@@ -29,5 +29,8 @@ function (ServerRequestInterface $request, LoginService $loginService) {
         throw HttpClientException::createWithoutCode('パスワードは半角英数 6 ～ 64 文字で入力してください');
     }
 
+    /**
+     * @psalm-suppress PossiblyNullArgument
+     */
     return $loginService($username, $rawPassword);
 };

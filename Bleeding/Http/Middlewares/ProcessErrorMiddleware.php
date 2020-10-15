@@ -45,7 +45,7 @@ final class ProcessErrorMiddleware implements MiddlewareInterface
         } catch (Throwable $throwable) {
             // TODO: implementation
             $code = $throwable->getCode();
-            $response = $this->responseFactory->createResponse(($code > 100 && $code < 600) ? $code : 500);
+            $response = $this->responseFactory->createResponse(($code > 100 && $code < 600) ? (int)$code : 500);
             $response->getBody()->write(json_encode([
                 'message' => $throwable->getMessage(),
                 'code' => $throwable->getCode(),

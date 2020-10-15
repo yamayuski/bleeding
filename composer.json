@@ -54,7 +54,8 @@
     "scripts": {
         "phpcs": "phpcs",
         "phpcbf": "phpcbf",
-        "test": "phpunit"
+        "test": "phpunit",
+        "psalm": "psalm"
     },
     "scripts-descriptions": {
         "phpcs": "PHP CodeSniffer for PSR-12",

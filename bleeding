@@ -13,14 +13,4 @@ define('ENTRY_TIME', microtime(true));
 // autoload
 require implode(DIRECTORY_SEPARATOR, [__DIR__, 'vendor', 'autoload.php']);
 
-use Psr\Container\ContainerInterface;
-
-// run application
-$app = new class extends Bleeding\ConsoleApplication {
-    public function createContainer(): ContainerInterface
-    {
-        return Edge\Bootstrap\ContainerFactory::create();
-    }
-};
-
-$app->run();
+(new Edge\Applications\ConsoleApplication)->run();

@@ -7,19 +7,22 @@
 
 declare(strict_types=1);
 
-namespace Bleeding;
+namespace Bleeding\Applications;
 
-use Psr\Container\ContainerInterface;
+use LogicException;
+use DI\Container;
+
+use const PHP_VERSION_ID;
 
 /**
- * @package Bleeding
+ * @package Bleeding\Applications
  */
 class ConsoleApplication implements Application
 {
     /**
      * {@inheritdoc}
      */
-    public function createContainer(): ContainerInterface
+    public function createContainer(): Container
     {
         return ContainerFactory::create();
     }
@@ -29,6 +32,9 @@ class ConsoleApplication implements Application
      */
     public function run(): void
     {
+        if (PHP_VERSION_ID < 80000) {
+            throw new LogicException('Bleeding Framework must run abobe PHP 8');
+        }
         $container = $this->createContainer();
 
         // TODO: implementation
