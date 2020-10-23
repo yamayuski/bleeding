@@ -12,7 +12,7 @@ namespace Bleeding\Http;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
- * createFromGlobals
+ * ServerRequest createFromGlobals
  * @package Bleeding\Http
  */
 interface ServerRequestFactoryInterface

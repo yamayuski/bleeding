@@ -8,7 +8,7 @@
 declare(strict_types=1);
 
 use Bleeding\Http\Attributes\Post;
-use Bleeding\Http\Exceptions\HttpClientException;
+use Bleeding\Http\Exceptions\BadRequestException;
 use Edge\User\LoginService;
 use Psr\Http\Message\ServerRequestInterface;
 use Respect\Validation\Validator as v;
@@ -24,9 +24,9 @@ function (ServerRequestInterface $request, LoginService $loginService) {
     $rawPasswordValidator = v::alnum()->noWhitespace()->length(6, 64);
 
     if (!$usernameValidator->validate($username)) {
-        throw HttpClientException::createWithoutCode('ユーザ名は半角英数 3 ～ 20 文字で入力してください');
+        throw BadRequestException::createWithMessage('ユーザ名は半角英数 3 ～ 20 文字で入力してください');
     } elseif (!$rawPasswordValidator->validate($rawPassword)) {
-        throw HttpClientException::createWithoutCode('パスワードは半角英数 6 ～ 64 文字で入力してください');
+        throw BadRequestException::createWithMessage('パスワードは半角英数 6 ～ 64 文字で入力してください');
     }
 
     /**

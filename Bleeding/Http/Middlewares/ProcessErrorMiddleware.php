@@ -9,12 +9,25 @@ declare(strict_types=1);
 
 namespace Bleeding\Http\Middlewares;
 
+use Bleeding\Exceptions\RuntimeException;
+use Bleeding\Http\Exceptions\MethodNotAllowedException;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Log\LoggerInterface;
 use Throwable;
+
+use function array_map;
+use function getenv;
+use function get_debug_type;
+use function implode;
+use function json_encode;
+use function strlen;
+
+use const JSON_THROW_ON_ERROR;
+use const JSON_UNESCAPED_UNICODE;
 
 /**
  * Process Runtime Error
@@ -22,18 +35,16 @@ use Throwable;
  */
 final class ProcessErrorMiddleware implements MiddlewareInterface
 {
-    /** @var ResponseFactoryInterface $responseFactory */
-    private $responseFactory;
-
     /**
      * constructor
      *
      * @param ResponseFactoryInterface $responseFactory
+     * @param LoggerInterface $logger
      */
-    public function __construct(ResponseFactoryInterface $responseFactory)
-    {
-        $this->responseFactory = $responseFactory;
-    }
+    public function __construct(
+        private ResponseFactoryInterface $responseFactory,
+        private LoggerInterface $logger
+    ) {}
 
     /**
      * {@inheritdoc}
@@ -43,15 +54,40 @@ final class ProcessErrorMiddleware implements MiddlewareInterface
         try {
             return $handler->handle($request);
         } catch (Throwable $throwable) {
-            // TODO: implementation
-            $code = $throwable->getCode();
-            $response = $this->responseFactory->createResponse(($code > 100 && $code < 600) ? (int)$code : 500);
-            $response->getBody()->write(json_encode([
-                'message' => $throwable->getMessage(),
-                'code' => $throwable->getCode(),
-                'exception' => $throwable->getPrevious(),
-            ]));
-            return $response;
+            return $this->processThrowable($request, $throwable);
         }
+    }
+
+    /**
+     * @param ServerRequestInterface $request
+     * @param Throwable $throwable
+     * @return ResponseInterface
+     */
+    private function processThrowable(ServerRequestInterface $request, Throwable $throwable): ResponseInterface
+    {
+        $code = $throwable->getCode();
+        $response = $this->responseFactory->createResponse(($code > 100 && $code < 600) ? (int)$code : 500);
+        $body = [
+            'type' => get_debug_type($throwable),
+            'message' => $throwable->getMessage(),
+            'code' => $throwable->getCode(),
+            'file' => $throwable->getFile(),
+            'line' => $throwable->getLine(),
+            'context' => $throwable instanceof RuntimeException ? $throwable->getContext() : null,
+            'previous' => $throwable->getPrevious(),
+            'trace' => array_map(fn (array $arg) => "${arg['class']}${arg['type']}${arg['function']}() in ${arg['file']}:${arg['line']}", $throwable->getTrace()),
+        ];
+
+        $this->logger->error($throwable->getMessage(), $body);
+        if (getenv('DEBUG_MODE') !== 'true') {
+            $body = ['message' => 'Internal Server Error'];
+        }
+        $bodyRaw = json_encode($body, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
+        $response->getBody()->write($bodyRaw);
+        if ($throwable instanceof MethodNotAllowedException) {
+            $response = $response->withHeader('Allow', implode(',', $throwable->getContext()['allow']));
+        }
+        return $response->withHeader('Content-Type', 'application/json;charset=utf-8')
+            ->withHeader('Content-Length', (string)strlen($bodyRaw));
     }
 }

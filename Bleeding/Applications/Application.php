@@ -10,19 +10,34 @@ declare(strict_types=1);
 namespace Bleeding\Applications;
 
 use DI\Container;
+use Monolog\Logger;
 
 /**
- * Main running application interface
+ * Main application interface
  * @package Bleeding\Applications
  */
 interface Application
 {
+    /**
+     * Create logger
+     *
+     * @return Logger
+     */
+    public function createLogger(): Logger;
+
     /**
      * Create container
      *
      * @return Container
      */
     public function createContainer(): Container;
+
+    /**
+     * get application base directory
+     *
+     * @return string
+     */
+    public function getBaseDirectory(): string;
 
     /**
      * Run application

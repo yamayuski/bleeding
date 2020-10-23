@@ -34,6 +34,13 @@ final class Route
     /** @var string[] */
     private array $middlewares;
 
+    /**
+     * @param string $path
+     * @param string $method
+     * @param callable $func
+     * @param string $filePath
+     * @param string[]|string $middlewares
+     */
     public function __construct(
         string $path,
         string $method,

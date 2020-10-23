@@ -17,8 +17,10 @@ use RecursiveIteratorIterator;
 use ReflectionFunction;
 use SplFileInfo;
 
+use function array_reduce;
 use function is_callable;
 use function is_null;
+use function str_ends_with;
 use function trim;
 
 /**
@@ -34,6 +36,8 @@ final class CollectRoute
      */
     public static function collect(string $baseDir): array
     {
+        // TODO: Collect from cache
+        // TODO: multiple baseDir
         $iterator = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator($baseDir),
             RecursiveIteratorIterator::SELF_FIRST
@@ -47,6 +51,10 @@ final class CollectRoute
             if (!is_null($route)) {
                 assert(!isset($paths[$route->getPath()][$route->getMethod()]), 'path is not conflicted');
                 $paths[$route->getPath()][$route->getMethod()] = $route;
+                if ($route->getMethod() === 'GET') {
+                    // Add HEAD routing
+                    $paths[$route->getPath()]['HEAD'] = $route;
+                }
             }
         }
 
@@ -67,6 +75,7 @@ final class CollectRoute
         $func = require $file->getRealPath();
         assert(is_callable($func), 'controller is callable');
 
+        /** @psalm-suppress InvalidArgument */
         $ref = new ReflectionFunction($func);
         assert(0 < count($ref->getAttributes()), 'controller has attribute');
 

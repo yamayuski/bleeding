@@ -64,7 +64,7 @@ class RuntimeException extends RuntimeExceptionBase
         int $code,
         array $context = [],
         ?Throwable $previous = null
-    )/*FIXME : static*/ {
+    ): static {
         $exception = new static($message, $code, $previous);
         $exception->setContext($context);
 

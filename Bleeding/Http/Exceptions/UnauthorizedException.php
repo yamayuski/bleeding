@@ -13,8 +13,11 @@ namespace Bleeding\Http\Exceptions;
  * 404 NotFound HTTP Exception
  * @package Bleeding\Http\Exceptions
  */
-class HttpClientException extends HttpException
+final class UnauthorizedException extends BadRequestException
 {
+    /** {@inheritdoc} */
+    protected const MESSAGE = 'Unauthorized';
+
     /** @var int Exception code */
-    protected const CODE = 400;
+    protected const CODE = 401;
 }

@@ -9,15 +9,14 @@ declare(strict_types=1);
 
 namespace Bleeding\Routing;
 
-use Bleeding\Http\Attributes\Get;
-use Bleeding\Http\Attributes\Post;
 use Bleeding\Http\Exceptions\MethodNotAllowedException;
 use Bleeding\Http\Exceptions\NotFoundException;
 use DI\Container;
 use JsonSerializable;
-use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -29,6 +28,10 @@ use function Bleeding\makeResolver;
 use function strtoupper;
 use function trim;
 
+/**
+ * Resolve routing and invoke main controller
+ * @package Bleeding\Routing
+ */
 class RoutingResolver implements RequestHandlerInterface
 {
     /** @var string */
@@ -39,6 +42,7 @@ class RoutingResolver implements RequestHandlerInterface
 
     /**
      * @param string $baseDir base controller directory
+     * @param Container $container IoC Container
      */
     public function __construct(string $baseDir, Container $container)
     {
@@ -59,44 +63,37 @@ class RoutingResolver implements RequestHandlerInterface
         $paths = CollectRoute::collect($this->baseDir);
 
         if (!array_key_exists($path, $paths)) {
-            throw NotFoundException::createWithoutCode('Path not found', compact('path', 'method'));
+            throw NotFoundException::createWithContext(compact('path', 'method'));
         }
 
         if (!array_key_exists($method, $paths[$path])) {
-            // TODO: Support OPTIONS and HEAD
-            throw MethodNotAllowedException::createWithoutCode('HTTP method not allowed', compact('path', 'method'));
+            // TODO: Support OPTIONS
+            $allow = array_keys($paths[$path]);
+            throw MethodNotAllowedException::createWithContext(compact('allow', 'path', 'method'));
         }
 
         $route = $paths[$path][$method];
 
         $queue = [];
         foreach ($route->getMiddlewares() as $middleware) {
+            assert(class_exists($middleware));
             $queue[] = $middleware;
         }
 
         $container = $this->container;
 
         // Main controller invoke
-        $queue[] = function (ServerRequestInterface $request) use ($route, $container): ResponseInterface {
-            /** @var array|JsonSerializable|ResponseInterface|string|null $result */
-            $result = $container->call($route->getFunc(), compact('request'));
-
-            if ($result instanceof ResponseInterface) {
-                return $result;
-            }
-
-            $response = $container->get(ResponseFactoryInterface::class)->createResponse(200);
-            if (is_null($result) || $result === '') {
-                $response->getBody()->write('{}');
-            } elseif (is_array($result) || $result instanceof JsonSerializable) {
-                $response->getBody()->write(json_encode($result));
-            }
-            return $response->withHeader('Content-Type', 'application/json; charset=UTF-8');
-        };
+        $queue[] = new ControllerCallerServerRequest($route, $container);
 
         $relayBuilder = new RelayBuilder(makeResolver($container));
-        return $relayBuilder
+        $response = $relayBuilder
             ->newInstance($queue)
             ->handle($request);
+
+        if ($method === 'HEAD') {
+            // fresh body
+            return $response->withBody($container->get(StreamFactoryInterface::class)->createStream(''));
+        }
+        return $response;
     }
 }

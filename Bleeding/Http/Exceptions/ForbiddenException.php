@@ -10,14 +10,14 @@ declare(strict_types=1);
 namespace Bleeding\Http\Exceptions;
 
 /**
- * 405 Method not allowed HTTP Exception
+ * 404 NotFound HTTP Exception
  * @package Bleeding\Http\Exceptions
  */
-final class MethodNotAllowedException extends BadRequestException
+final class ForbiddenException extends BadRequestException
 {
     /** {@inheritdoc} */
-    protected const MESSAGE = 'Method Not Allowed';
+    protected const MESSAGE = 'Forbidden';
 
     /** @var int Exception code */
-    protected const CODE = 405;
+    protected const CODE = 403;
 }

@@ -15,6 +15,12 @@ namespace Edge\User;
 interface IUserRepository
 {
     /**
+     * @param int $id
+     * @return ?UserEntity
+     */
+    public function findById(int $id): ?UserEntity;
+
+    /**
      * @param string $username
      * @return ?UserEntity
      */

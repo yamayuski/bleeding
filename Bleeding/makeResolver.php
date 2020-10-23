@@ -30,7 +30,7 @@ function makeResolver(ContainerInterface $container): callable
      * @param mixed $entry
      * @return bool is valid
      */
-    $isValidInstance = function ($entry): bool {
+    $isValidInstance = function (mixed $entry): bool {
         return $entry instanceof MiddlewareInterface ||
             $entry instanceof RequestHandlerInterface ||
             is_callable($entry);
@@ -40,7 +40,7 @@ function makeResolver(ContainerInterface $container): callable
      * @param mixed $entry middleware entry
      * @return mixed entry instance
      */
-    return function ($entry) use ($container, $isValidInstance) {
+    return function (mixed $entry) use ($container, $isValidInstance): mixed {
         if ($isValidInstance($entry)) {
             return $entry;
         }

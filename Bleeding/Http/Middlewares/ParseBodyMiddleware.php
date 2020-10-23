@@ -9,8 +9,8 @@ declare(strict_types=1);
 
 namespace Bleeding\Http\Middlewares;
 
-use Bleeding\Exceptions\RuntimeException;
-use Bleeding\Http\Exceptions\HttpClientException;
+use Bleeding\Http\Exceptions\BadRequestException;
+use JsonException;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -21,6 +21,8 @@ use function json_decode;
 use function parse_str;
 use function str_ends_with;
 use function str_starts_with;
+
+use const JSON_THROW_ON_ERROR;
 
 /**
  * Parse request body
@@ -35,14 +37,13 @@ final class ParseBodyMiddleware implements MiddlewareInterface
     {
         $contentType = $request->getHeaderLine('Content-Type');
 
-        // TODO: use match statement
-        if (str_ends_with($contentType, 'json')) {
-            $request = $this->parseJson($request);
-        } elseif (str_starts_with($contentType, 'multipart')) {
-            $request = $this->parseMultipart($request);
-        } elseif (str_ends_with($contentType, 'x-www-form-urlencoded')) {
-            $request = $this->parseForm($request);
-        }
+        $request = match (true) {
+            str_ends_with($contentType, 'json') => $this->parseJson($request),
+            str_starts_with($contentType, 'multipart') => $this->parseMultipart($request),
+            str_ends_with($contentType, 'x-www-form-urlencoded') => $this->parseForm($request),
+            default => $request,
+        };
+
         return $handler->handle($request);
     }
 
@@ -54,9 +55,9 @@ final class ParseBodyMiddleware implements MiddlewareInterface
     protected function parseJson(ServerRequestInterface $request): ServerRequestInterface
     {
         try {
-            return $request->withParsedBody(json_decode((string)$request->getBody(), true));
-        } catch (RuntimeException $exception) {
-            throw HttpClientException::createWithoutCode('Invalid json', [], $exception);
+            return $request->withParsedBody(json_decode((string)$request->getBody(), true, 512, JSON_THROW_ON_ERROR));
+        } catch (JsonException $exception) {
+            throw BadRequestException::createWithContext([], $exception);
         }
     }
 

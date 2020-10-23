@@ -10,18 +10,26 @@ declare(strict_types=1);
 namespace Edge\Applications;
 
 use Bleeding\Applications\ConsoleApplication as ConsoleApplicationBase;
-
 use DI\Container;
 
 /**
  * @package Edge\Applications
  */
-class ConsoleApplication extends ConsoleApplicationBase {
+class ConsoleApplication extends ConsoleApplicationBase
+{
     /**
      * {@inheritdoc}
      */
     public function createContainer(): Container
     {
         return ContainerFactory::create();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getBaseDirectory(): string
+    {
+        return implode(DIRECTORY_SEPARATOR, [__DIR__, '..', '..']);
     }
 };

@@ -16,25 +16,44 @@ use Throwable;
  * Raw HTTP Exception
  * @package Bleeding\Http\Exceptions
  */
-class HttpException extends RuntimeException
+class InternalServerErrorException extends RuntimeException
 {
+    /** @var string MESSAGE */
+    protected const MESSAGE = 'Internal Server Error';
+
     /** @var int CODE */
     protected const CODE = 500;
 
     /**
      * Create contextual Exception
      *
-     * @param string $message
      * @param array $context
      * @param ?Throwable $previous
      * @return static
      */
-    public static function createWithoutCode(
+    public static function createWithMessage(
         string $message,
         array $context = [],
         ?Throwable $previous = null
-    )/*FIXME : static*/ {
+    ): static {
         $exception = new static($message, static::CODE, $previous);
+        $exception->setContext($context);
+
+        return $exception;
+    }
+
+    /**
+     * Create contextual Exception
+     *
+     * @param array $context
+     * @param ?Throwable $previous
+     * @return static
+     */
+    public static function createWithContext(
+        array $context = [],
+        ?Throwable $previous = null
+    ): static {
+        $exception = new static(static::MESSAGE, static::CODE, $previous);
         $exception->setContext($context);
 
         return $exception;

@@ -12,13 +12,24 @@ namespace Bleeding\Applications;
 use Bleeding\Http\ServerRequestFactoryInterface;
 use DI\Container;
 use LogicException;
+use Monolog\Logger;
 use Narrowspark\HttpEmitter\SapiEmitter;
+use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Log\LoggerInterface;
 use Relay\RelayBuilder;
 
+use function array_map;
+use function assert;
 use function Bleeding\makeResolver;
+use function compact;
+use function count;
+use function debug_backtrace;
+use function json_encode;
+use function restore_error_handler;
+use function set_error_handler;
 
 use const PHP_VERSION_ID;
 
@@ -30,10 +41,23 @@ abstract class WebApplication implements Application
     /**
      * {@inheritdoc}
      */
+    public function createLogger(): Logger
+    {
+        return LoggerFactory::create('Bleeding');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function createContainer(): Container
     {
         return ContainerFactory::create();
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    abstract public function getBaseDirectory(): string;
 
     /**
      * Creates middleware queue processes Request and Response
@@ -51,15 +75,16 @@ abstract class WebApplication implements Application
         if (PHP_VERSION_ID < 80000) {
             throw new LogicException('Bleeding Framework must run abobe PHP 8');
         }
-        $this->setErrorHandler();
+        $logger = $this->createLogger();
+        $this->setErrorHandler($logger);
         $container = $this->createContainer();
-        assert($container->has(ServerRequestFactoryInterface::class), 'exists own ServerRequestFactory');
+        $container->set(LoggerInterface::class, $logger);
         $serverRequestFactory = $container->get(ServerRequestFactoryInterface::class);
 
         $request = $serverRequestFactory->createFromGlobals();
 
         $queue = $this->createProcessQueue($container);
-        assert(0 < count($queue), 'Assert queue has filled');
+        assert(0 < count($queue), 'queue has filled');
 
         $relayBuilder = new RelayBuilder(makeResolver($container));
         $response = $relayBuilder
@@ -67,22 +92,45 @@ abstract class WebApplication implements Application
             ->handle($request);
         (new SapiEmitter())->emit($response);
 
-        restore_error_handler();
+        $this->restoreErrorHandler();
     }
 
     /**
      * Set global error handler
+     * @param Logger $logger
      */
-    protected function setErrorHandler(): void
+    final protected function setErrorHandler(Logger $logger): void
     {
         set_error_handler(function (
             int $errno,
             string $errstr,
             string $errfile,
             int $errline
-        ) {
-            // TODO: implementation
+        ) use ($logger) {
+            $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 20);
+            $backtrace = array_map(fn (array $arg) => "${arg['class']}${arg['type']}${arg['function']} in ${arg['file']}:${arg['line']}", $backtrace);
+
+            $body = ['message' => $errstr, 'error' => compact('errno', 'errstr', 'errfile', 'errline', 'backtrace')];
+            $debugMode = getenv('DEBUG_MODE') === 'true';
+            $bodyString = json_encode($debugMode ? $body : ['message' => 'Internal Server Error'], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
+            $bodyLen = strlen($bodyString);
+            $logger->error($errstr, $body);
+
+            // respond HTTP
+            header('HTTP/1.1 500 Internal Server Error');
+            header('content-type: application/json; charset=utf-8');
+            header("content-length: ${bodyLen}");
+            echo $bodyString;
+
             return false;
         });
+    }
+
+    /**
+     * Restore global error handler
+     */
+    final protected function restoreErrorHandler(): void
+    {
+        restore_error_handler();
     }
 }

@@ -11,14 +11,23 @@ namespace Bleeding\Applications;
 
 use LogicException;
 use DI\Container;
+use Monolog\Logger;
 
 use const PHP_VERSION_ID;
 
 /**
  * @package Bleeding\Applications
  */
-class ConsoleApplication implements Application
+abstract class ConsoleApplication implements Application
 {
+    /**
+     * {@inheritdoc}
+     */
+    public function createLogger(): Logger
+    {
+        return LoggerFactory::create('Bleeding');
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -26,6 +35,11 @@ class ConsoleApplication implements Application
     {
         return ContainerFactory::create();
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    abstract public function getBaseDirectory(): string;
 
     /**
      * {@inheritdoc}
