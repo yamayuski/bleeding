@@ -10,7 +10,7 @@ declare(strict_types=1);
 namespace Bleeding\Applications;
 
 use DI\Container;
-use Monolog\Logger;
+use Psr\Log\LoggerInterface;
 
 /**
  * Main application interface
@@ -18,12 +18,18 @@ use Monolog\Logger;
  */
 interface Application
 {
+    /** @var string APP_NAME Application Name */
+    public const APP_NAME = 'Bleeding';
+
+    /** @var string APP_VERSION Application Version */
+    public const APP_VERSION = '1.0.0';
+
     /**
      * Create logger
      *
-     * @return Logger
+     * @return LoggerInterface
      */
-    public function createLogger(): Logger;
+    public function createLogger(): LoggerInterface;
 
     /**
      * Create container
@@ -31,13 +37,6 @@ interface Application
      * @return Container
      */
     public function createContainer(): Container;
-
-    /**
-     * get application base directory
-     *
-     * @return string
-     */
-    public function getBaseDirectory(): string;
 
     /**
      * Run application

@@ -28,8 +28,8 @@ class ConsoleApplication extends ConsoleApplicationBase
     /**
      * {@inheritdoc}
      */
-    public function getBaseDirectory(): string
+    protected function getCommandDirectory(): string
     {
-        return implode(DIRECTORY_SEPARATOR, [__DIR__, '..', '..']);
+        return implode(DIRECTORY_SEPARATOR, [__DIR__, '..', 'Commands']);
     }
 };

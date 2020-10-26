@@ -11,27 +11,19 @@ namespace Bleeding\Applications;
 
 use Bleeding\Http\ServerRequestFactoryInterface;
 use DI\Container;
-use LogicException;
-use Monolog\Logger;
 use Narrowspark\HttpEmitter\SapiEmitter;
-use Psr\Http\Message\ResponseFactoryInterface;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use Relay\RelayBuilder;
 
-use function array_map;
 use function assert;
 use function Bleeding\makeResolver;
-use function compact;
 use function count;
-use function debug_backtrace;
-use function json_encode;
-use function restore_error_handler;
-use function set_error_handler;
-
-use const PHP_VERSION_ID;
+use function fastcgi_finish_request;
+use function headers_sent;
 
 /**
  * @package Bleeding\Applications
@@ -41,7 +33,7 @@ abstract class WebApplication implements Application
     /**
      * {@inheritdoc}
      */
-    public function createLogger(): Logger
+    public function createLogger(): LoggerInterface
     {
         return LoggerFactory::create('Bleeding');
     }
@@ -55,34 +47,30 @@ abstract class WebApplication implements Application
     }
 
     /**
-     * {@inheritdoc}
-     */
-    abstract public function getBaseDirectory(): string;
-
-    /**
      * Creates middleware queue processes Request and Response
      *
      * @param Container $container
      * @return (MiddlewareInterface|RequestHandlerInterface|string)[]
      */
-    abstract public function createProcessQueue(Container $container): array;
+    abstract protected function createProcessQueue(Container $container): array;
 
     /**
      * {@inheritdoc}
      */
     final public function run(): void
     {
-        if (PHP_VERSION_ID < 80000) {
-            throw new LogicException('Bleeding Framework must run abobe PHP 8');
-        }
         $logger = $this->createLogger();
-        $this->setErrorHandler($logger);
+        $errorHandler = (new ErrorHandler($logger));
+        $errorHandler->setErrorHandler();
+
         $container = $this->createContainer();
         $container->set(LoggerInterface::class, $logger);
-        $serverRequestFactory = $container->get(ServerRequestFactoryInterface::class);
+        $container->set(ContainerInterface::class, $container);
 
-        $request = $serverRequestFactory->createFromGlobals();
+        /** @var ServerRequestInterface $request */
+        $request = $container->get(ServerRequestFactoryInterface::class)->createFromGlobals();
 
+        /** @var (MiddlewareInterface|RequestHandlerInterface|string)[] $queue */
         $queue = $this->createProcessQueue($container);
         assert(0 < count($queue), 'queue has filled');
 
@@ -91,46 +79,13 @@ abstract class WebApplication implements Application
             ->newInstance($queue)
             ->handle($request);
         (new SapiEmitter())->emit($response);
+        assert(headers_sent());
 
-        $this->restoreErrorHandler();
-    }
+        if (function_exists('fastcgi_finish_request')) {
+            fastcgi_finish_request();
+        }
 
-    /**
-     * Set global error handler
-     * @param Logger $logger
-     */
-    final protected function setErrorHandler(Logger $logger): void
-    {
-        set_error_handler(function (
-            int $errno,
-            string $errstr,
-            string $errfile,
-            int $errline
-        ) use ($logger) {
-            $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 20);
-            $backtrace = array_map(fn (array $arg) => "${arg['class']}${arg['type']}${arg['function']} in ${arg['file']}:${arg['line']}", $backtrace);
-
-            $body = ['message' => $errstr, 'error' => compact('errno', 'errstr', 'errfile', 'errline', 'backtrace')];
-            $debugMode = getenv('DEBUG_MODE') === 'true';
-            $bodyString = json_encode($debugMode ? $body : ['message' => 'Internal Server Error'], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
-            $bodyLen = strlen($bodyString);
-            $logger->error($errstr, $body);
-
-            // respond HTTP
-            header('HTTP/1.1 500 Internal Server Error');
-            header('content-type: application/json; charset=utf-8');
-            header("content-length: ${bodyLen}");
-            echo $bodyString;
-
-            return false;
-        });
-    }
-
-    /**
-     * Restore global error handler
-     */
-    final protected function restoreErrorHandler(): void
-    {
-        restore_error_handler();
+        $errorHandler->restoreErrorHandler();
+        exit(0);
     }
 }

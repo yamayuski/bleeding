@@ -10,8 +10,11 @@ declare(strict_types=1);
 namespace Bleeding\Applications;
 
 use Monolog\Formatter\JsonFormatter;
+use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
+use Symfony\Component\Console\Logger\ConsoleLogger;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * @package Bleeding\Applications
@@ -19,15 +22,15 @@ use Monolog\Logger;
 class LoggerFactory
 {
     /**
-     * Create Logger
+     * Create Logger for Web
      * @return Logger
      */
     public static function create(string $name = 'Bleeding'): Logger
     {
-        $logger = new Logger($name);
         $handler = new StreamHandler('php://stdout');
         $handler->setFormatter(new JsonFormatter());
 
+        $logger = new Logger($name);
         $logger->pushHandler($handler);
 
         return $logger;

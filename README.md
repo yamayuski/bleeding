@@ -1,14 +1,17 @@
 # Bleeding Edge PHP 8 Framework
 
+**Caution: This framework and PHP 8 is under development. You should not use in production!**
+
 ## Introduction
 
 - PHP 8 Ready!
-- Ultra thin framework
+- Thin framework
     - No [nikic/fast-route](https://github.com/nikic/FastRoute)
     - No route parameters
     - GET & POST HTTP method only(RESTful is too complex)
     - Functional controller(No Instance or state needed)
-    - Controller attributes
+    - Controller attributes(Method, Path, Middlewares)
+    - Functional command with attributes, powered by [Silly](https://github.com/mnapoli/silly)
     - Accepts `application/json` first, `multipart/form-data` second
     - returns only `application/json`
 - PHP Standard Recommendation(PSR) first

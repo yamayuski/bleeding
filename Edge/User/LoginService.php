@@ -10,7 +10,6 @@ declare(strict_types=1);
 namespace Edge\User;
 
 use Bleeding\Exceptions\RuntimeException;
-use DI\Attribute\Inject;
 
 use function password_verify;
 

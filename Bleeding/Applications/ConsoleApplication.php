@@ -9,23 +9,50 @@ declare(strict_types=1);
 
 namespace Bleeding\Applications;
 
-use LogicException;
+use Bleeding\Console\CollectCommands;
 use DI\Container;
-use Monolog\Logger;
-
-use const PHP_VERSION_ID;
+use Psr\Container\ContainerInterface;
+use Psr\Log\LoggerInterface;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use Silly\Application as ApplicationBase;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\ArgvInput;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Logger\ConsoleLogger;
+use Symfony\Component\Console\Output\ConsoleOutput;
+use Symfony\Component\Console\Output\OutputInterface;
+use Throwable;
 
 /**
  * @package Bleeding\Applications
  */
 abstract class ConsoleApplication implements Application
 {
+    /** @var InputInterface $input */
+    protected InputInterface $input;
+
+    /** @var OutputInterface $output */
+    protected OutputInterface $output;
+
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     */
+    public function __construct(
+        ?InputInterface $input = null,
+        ?OutputInterface $output = null
+    ) {
+        $this->input = $input ?? new ArgvInput();
+        $this->output = $output ?? new ConsoleOutput();
+    }
+
     /**
      * {@inheritdoc}
      */
-    public function createLogger(): Logger
+    public function createLogger(): LoggerInterface
     {
-        return LoggerFactory::create('Bleeding');
+        return new ConsoleLogger($this->output);
     }
 
     /**
@@ -37,20 +64,39 @@ abstract class ConsoleApplication implements Application
     }
 
     /**
-     * {@inheritdoc}
+     * Get directory for commands
+     * @return string
      */
-    abstract public function getBaseDirectory(): string;
+    abstract protected function getCommandDirectory(): string;
 
     /**
      * {@inheritdoc}
      */
-    public function run(): void
+    final public function run(): void
     {
-        if (PHP_VERSION_ID < 80000) {
-            throw new LogicException('Bleeding Framework must run abobe PHP 8');
-        }
-        $container = $this->createContainer();
+        $logger = $this->createLogger();
+        $errorHandler = (new ErrorHandler($logger));
+        $errorHandler->setErrorHandler();
 
-        // TODO: implementation
+        $container = $this->createContainer();
+        $container->set(LoggerInterface::class, $logger);
+        $container->set(ContainerInterface::class, $container);
+
+        $app = new ApplicationBase(static::APP_NAME, static::APP_VERSION);
+        $app->useContainer($container, true, true);
+        $commands = CollectCommands::collect($this->getCommandDirectory());
+        foreach ($commands as $command) {
+            $app->command($command->getDefinition(), $command->getFunc());
+        }
+
+        try {
+            $app->run($this->input, $this->output);
+        } catch (Throwable $exception) {
+            $logger->error($exception->getMessage(), compact('exception'));
+            exit(1);
+        }
+
+        $errorHandler->restoreErrorHandler();
+        exit(0);
     }
 }

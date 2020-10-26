@@ -19,7 +19,7 @@ ENV COMPOSER_ALLOW_SUPERUSER 1
 ENV COMPOSER_HOME /tmp
 ENV COMPOSER_CACHE_DIR /tmp
 
-COPY --from=composer:2.0.0-RC1 /usr/bin/composer /usr/bin/composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 RUN set -eux; \
     apk add --no-cache bash git make unzip zip \

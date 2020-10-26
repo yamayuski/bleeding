@@ -22,16 +22,19 @@ class ContainerFactory
     /**
      * Create Container
      *
+     * @param ?string $cacheDir
      * @return Container
      */
-    public static function create(): Container
+    public static function create(?string $cacheDir = null): Container
     {
         $builder = new ContainerBuilder();
-        $builder->useAttributes(true);
+
+        if (!is_null($cacheDir) && getenv('DEBUG_MODE') !== 'true') {
+            // optimization
+            $builder->enableCompilation($cacheDir);
+        }
 
         static::addDefinitions($builder);
-
-        // TODO: optimization options
 
         return $builder->build();
     }
