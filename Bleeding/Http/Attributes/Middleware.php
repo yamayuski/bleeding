@@ -36,7 +36,7 @@ class Middleware
     /**
      * Get middleware names
      *
-     * @return array
+     * @return string[]
      */
     public function getMiddlewareNames(): array
     {

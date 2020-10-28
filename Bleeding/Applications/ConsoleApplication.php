@@ -9,7 +9,7 @@ declare(strict_types=1);
 
 namespace Bleeding\Applications;
 
-use Bleeding\Console\CollectCommands;
+use Bleeding\Console\CollectCommand;
 use DI\Container;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
@@ -24,20 +24,28 @@ use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
 
+use function file_exists;
+
 /**
  * @package Bleeding\Applications
  */
 abstract class ConsoleApplication implements Application
 {
-    /** @var InputInterface $input */
+    /**
+     * @var InputInterface $input
+     * @readonly
+     */
     protected InputInterface $input;
 
-    /** @var OutputInterface $output */
+    /**
+     * @var OutputInterface $output
+     * @readonly
+     */
     protected OutputInterface $output;
 
     /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
+     * @param ?InputInterface $input
+     * @param ?OutputInterface $output
      */
     public function __construct(
         ?InputInterface $input = null,
@@ -48,7 +56,8 @@ abstract class ConsoleApplication implements Application
     }
 
     /**
-     * {@inheritdoc}
+     * create logger
+     * @return LoggerInterface
      */
     public function createLogger(): LoggerInterface
     {
@@ -56,7 +65,8 @@ abstract class ConsoleApplication implements Application
     }
 
     /**
-     * {@inheritdoc}
+     * create IoC container
+     * @return Container
      */
     public function createContainer(): Container
     {
@@ -64,7 +74,7 @@ abstract class ConsoleApplication implements Application
     }
 
     /**
-     * Get directory for commands
+     * Get parent directory for commands
      * @return string
      */
     abstract protected function getCommandDirectory(): string;
@@ -72,7 +82,7 @@ abstract class ConsoleApplication implements Application
     /**
      * {@inheritdoc}
      */
-    final public function run(): void
+    final public function run(): int
     {
         $logger = $this->createLogger();
         $errorHandler = (new ErrorHandler($logger));
@@ -81,22 +91,27 @@ abstract class ConsoleApplication implements Application
         $container = $this->createContainer();
         $container->set(LoggerInterface::class, $logger);
         $container->set(ContainerInterface::class, $container);
+        $container->set(InputInterface::class, $this->input);
+        $container->set(OutputInterface::class, $this->output);
 
         $app = new ApplicationBase(static::APP_NAME, static::APP_VERSION);
         $app->useContainer($container, true, true);
-        $commands = CollectCommands::collect($this->getCommandDirectory());
+        $app->setAutoExit(false);
+
+        assert(file_exists($this->getCommandDirectory()));
+        $commands = CollectCommand::collect($this->getCommandDirectory());
         foreach ($commands as $command) {
             $app->command($command->getDefinition(), $command->getFunc());
         }
 
         try {
-            $app->run($this->input, $this->output);
-        } catch (Throwable $exception) {
-            $logger->error($exception->getMessage(), compact('exception'));
-            exit(1);
+            return $app->run($this->input, $this->output);
+            // @codeCoverageIgnoreStart
+        } finally {
+            $errorHandler->restoreErrorHandler();
         }
 
-        $errorHandler->restoreErrorHandler();
-        exit(0);
+        return 1;
+        // @codeCoverageIgnoreEnd
     }
 }

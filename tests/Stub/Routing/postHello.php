@@ -7,8 +7,8 @@
 
 declare(strict_types=1);
 
-use Bleeding\Routing\Attributes\Get;
+use Bleeding\Routing\Attributes\Post;
 
 return
-#[Get('/')]
+#[Post('/')]
 fn () => ['Hello' => 'world'];

@@ -16,6 +16,7 @@ use function strtoupper;
  * Route
  *
  * @package Bleeding\Routing
+ * @immutable
  */
 final class Route
 {
@@ -80,6 +81,15 @@ final class Route
     public function getFunc(): callable
     {
         return $this->func;
+    }
+
+    /**
+     * get function filepath
+     * @return string
+     */
+    public function getFilePath(): string
+    {
+        return $this->filePath;
     }
 
     /**

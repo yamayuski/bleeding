@@ -24,7 +24,6 @@ use ReflectionFunction;
 use Relay\RelayBuilder;
 
 use function array_key_exists;
-use function Bleeding\makeResolver;
 use function strtoupper;
 use function trim;
 
@@ -83,16 +82,19 @@ class RoutingResolver implements RequestHandlerInterface
         $container = $this->container;
 
         // Main controller invoke
-        $queue[] = new ControllerCallerServerRequest($route, $container);
+        $queue[] = new InvokeController($route, $container);
 
-        $relayBuilder = new RelayBuilder(makeResolver($container));
+        $relayBuilder = new RelayBuilder((new MiddlewareResolver($container))->createResolver());
         $response = $relayBuilder
             ->newInstance($queue)
             ->handle($request);
 
         if ($method === 'HEAD') {
             // fresh body
-            return $response->withBody($container->get(StreamFactoryInterface::class)->createStream(''));
+            /** @var StreamFactoryInterface $streamFactory */
+            $streamFactory = $container->get(StreamFactoryInterface::class);
+            return $response
+                ->withBody($streamFactory->createStream(''));
         }
         return $response;
     }

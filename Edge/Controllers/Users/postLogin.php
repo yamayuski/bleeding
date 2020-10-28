@@ -7,8 +7,8 @@
 
 declare(strict_types=1);
 
-use Bleeding\Http\Attributes\Post;
 use Bleeding\Http\Exceptions\BadRequestException;
+use Bleeding\Routing\Attributes\Post;
 use Edge\User\LoginService;
 use Psr\Http\Message\ServerRequestInterface;
 use Respect\Validation\Validator as v;

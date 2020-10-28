@@ -9,9 +9,10 @@ declare(strict_types=1);
 
 namespace Bleeding\Routing;
 
-use Bleeding\Http\Attributes\Get;
 use Bleeding\Http\Attributes\Middleware;
-use Bleeding\Http\Attributes\Post;
+use Bleeding\Routing\Attributes\Get;
+use Bleeding\Routing\Attributes\Post;
+use LogicException;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use ReflectionFunction;
@@ -25,6 +26,7 @@ use function trim;
 
 /**
  * @package Bleeding\Routing
+ * @immutable
  */
 final class CollectRoute
 {
@@ -73,33 +75,63 @@ final class CollectRoute
         }
 
         $func = require $file->getRealPath();
-        assert(is_callable($func), 'controller is callable');
+        assert(is_callable($func), "controller {$file->getRealPath()} is callable");
 
         /** @psalm-suppress InvalidArgument */
         $ref = new ReflectionFunction($func);
-        assert(0 < count($ref->getAttributes()), 'controller has attribute');
+        assert(0 < count($ref->getAttributes()), "Controller {$file->getRealPath()} has attribute");
 
-        /** @var string[] $middlewares */
+        $middlewares = self::getMiddlewares($ref);
+        $attr = self::getAttribute($ref);
+
+        return new Route(
+            $attr->getPath(),
+            $attr->getMethodName(),
+            $func,
+            $file->getRealPath(),
+            $middlewares
+        );
+    }
+
+    /**
+     * @param ReflectionFunction $ref
+     * @return string[]
+     */
+    private static function getMiddlewares(ReflectionFunction $ref): array
+    {
         $middlewares = [];
-        if (0 < count($ref->getAttributes(Middleware::class))) {
-            $attr = $ref->getAttributes(Middleware::class)[0]->newInstance();
-            $middlewares = $attr->getMiddlewareNames();
-            assert(
-                array_reduce($middlewares, fn (bool $carry, string $item) => ($carry && class_exists($item)), true),
-                'All middleware class exists'
-            );
+        if (0 === count($ref->getAttributes(Middleware::class))) {
+            return $middlewares;
         }
+        $attr = $ref->getAttributes(Middleware::class)[0]->newInstance();
+        $middlewares = $attr->getMiddlewareNames();
+        assert(
+            array_reduce(
+                $middlewares,
+                fn (bool $carry, string $item) => ($carry && class_exists($item)),
+                true
+            ),
+            'All middleware class exists'
+        );
 
-        $attr = null;
-        if (0 < count($ref->getAttributes(Get::class))) {
-            $attr = $ref->getAttributes(Get::class)[0]->newInstance();
-        } elseif (0 < count($ref->getAttributes(Post::class))) {
-            $attr = $ref->getAttributes(Post::class)[0]->newInstance();
-        } else {
-            return null;
+        return $middlewares;
+    }
+
+    /**
+     * Get Get|Post Attribute
+     * @param ReflectionFunction $ref
+     * @return Get|Post
+     */
+    private static function getAttribute(ReflectionFunction $ref): Get|Post
+    {
+        $attr = $ref->getAttributes(Get::class);
+        if (1 === count($attr)) {
+            return $attr[0]->newInstance();
         }
-
-        $path = '/' . trim($attr->getPath(), '/');
-        return new Route($path, $attr->getMethodName(), $func, $file->getRealPath(), $middlewares);
+        $attr = $ref->getAttributes(Post::class);
+        if (1 === count($attr)) {
+            return $attr[0]->newInstance();
+        }
+        throw new LogicException('Unknown routing funciton found: ' . $ref->getFileName()); // @codeCoverageIgnore
     }
 }

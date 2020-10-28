@@ -21,8 +21,9 @@ use function str_ends_with;
 
 /**
  * @package Bleeding\Console
+ * @immutable
  */
-final class CollectCommands
+final class CollectCommand
 {
     /**
      * List up all routes
@@ -71,9 +72,8 @@ final class CollectCommands
         $attr = null;
         if (0 < count($ref->getAttributes(CommandAttr::class))) {
             $attr = $ref->getAttributes(CommandAttr::class)[0]->newInstance();
-        } else {
-            return null;
         }
+        assert(!is_null($attr), 'No command attribute has set: ' . $file->getRealPath());
 
         return new Command($attr->getDefinition(), $func);
     }

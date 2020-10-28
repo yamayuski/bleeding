@@ -16,7 +16,7 @@ use Tests\TestCase;
 
 /**
  * @package Tests\Bleeding\Support
- * @coversDefaultClass Clock
+ * @coversDefaultClass \Bleeding\Support\Clock
  */
 final class ClockTest extends TestCase
 {

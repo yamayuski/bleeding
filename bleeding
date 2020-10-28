@@ -13,4 +13,6 @@ define('ENTRY_TIME', microtime(true));
 // autoload
 require implode(DIRECTORY_SEPARATOR, [__DIR__, 'vendor', 'autoload.php']);
 
-(new Edge\Applications\ConsoleApplication)->run();
+$exitCode = (new Edge\Applications\ConsoleApplication)->run();
+
+exit($exitCode);

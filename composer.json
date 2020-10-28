@@ -42,10 +42,7 @@
         "psr-4": {
             "Bleeding\\": "Bleeding/",
             "Edge\\": "Edge/"
-        },
-        "files": [
-            "Bleeding/makeResolver.php"
-        ]
+        }
     },
     "autoload-dev": {
         "psr-4": {
@@ -56,12 +53,15 @@
         "phpcs": "phpcs",
         "phpcbf": "phpcbf",
         "test": "phpunit",
+        "coverage": "phpdbg -qrr vendor/bin/phpunit --coverage-html=cache/coverage",
         "psalm": "psalm"
     },
     "scripts-descriptions": {
-        "phpcs": "PHP CodeSniffer for PSR-12",
-        "phpcbf": "Autofix to PSR-12-valid",
-        "test": "Runtime testing"
+        "phpcs": "Run PHP CodeSniffer for PSR-12",
+        "phpcbf": "Run autofix to PSR-12-valid",
+        "test": "Run test",
+        "coverage": "Run test and show coverage",
+        "psalm": "Run psalm analysis"
     },
     "config": {
         "sort-packages": true

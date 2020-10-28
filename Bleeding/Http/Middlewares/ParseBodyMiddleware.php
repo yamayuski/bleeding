@@ -27,6 +27,7 @@ use const JSON_THROW_ON_ERROR;
 /**
  * Parse request body
  * @package Bleeding\Http\Middlewares
+ * @immutable
  */
 final class ParseBodyMiddleware implements MiddlewareInterface
 {

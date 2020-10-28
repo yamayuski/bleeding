@@ -9,9 +9,6 @@ declare(strict_types=1);
 
 namespace Bleeding\Applications;
 
-use DI\Container;
-use Psr\Log\LoggerInterface;
-
 /**
  * Main application interface
  * @package Bleeding\Applications
@@ -25,23 +22,9 @@ interface Application
     public const APP_VERSION = '1.0.0';
 
     /**
-     * Create logger
-     *
-     * @return LoggerInterface
-     */
-    public function createLogger(): LoggerInterface;
-
-    /**
-     * Create container
-     *
-     * @return Container
-     */
-    public function createContainer(): Container;
-
-    /**
      * Run application
      *
-     * @return void
+     * @return int exitCode
      */
-    public function run(): void;
+    public function run(): int;
 }

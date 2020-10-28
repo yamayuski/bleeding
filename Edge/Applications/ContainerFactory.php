@@ -26,4 +26,15 @@ final class ContainerFactory extends ContainerFactoryBase
 
         $builder->addDefinitions(static::resolveDefinitionsPath('Edge', 'Repositories'));
     }
+
+    /**
+     * resolve definitions path
+     *
+     * @param string[] $args
+     * @return string
+     */
+    private static function resolveDefinitionsPath(string ...$args): string
+    {
+        return implode(DIRECTORY_SEPARATOR, [__DIR__, '..', '..', ...$args, 'definitions.php']);
+    }
 }

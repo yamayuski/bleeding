@@ -1,5 +1,7 @@
 <?php
 
+// @codeCoverageIgnoreStart
+
 /**
  * @author Masaru Yamagishi <m-yamagishi@infiniteloop.co.jp>
  * @copyright 2020- Masaru Yamagishi

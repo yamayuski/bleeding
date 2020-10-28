@@ -56,7 +56,7 @@ class ContainerFactory
      * @param string[] $args
      * @return string
      */
-    protected static function resolveDefinitionsPath(string ...$args): string
+    private static function resolveDefinitionsPath(string ...$args): string
     {
         return implode(DIRECTORY_SEPARATOR, [__DIR__, '..', '..', ...$args, 'definitions.php']);
     }

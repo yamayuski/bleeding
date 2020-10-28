@@ -18,10 +18,11 @@ use function headers_sent;
 use function json_encode;
 use function restore_error_handler;
 use function set_error_handler;
+use function strpos;
 
 use const DEBUG_BACKTRACE_IGNORE_ARGS;
-use const JSON_THROW_ON_ERROR;
 use const JSON_UNESCAPED_UNICODE;
+use const PHP_SAPI;
 
 /**
  * catches PHP Errors and respond Error Response
@@ -65,14 +66,20 @@ final class ErrorHandler
      */
     public function handle(int $errno, string $errstr, string $errfile, int $errline): bool
     {
-        $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 20);
-        $backtrace = array_map(fn (array $arg) =>
-            "${arg['class']}${arg['type']}${arg['function']} in ${arg['file']}:${arg['line']}",
-            $backtrace
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 20);
+        $trace = array_map(fn (array $arg) =>
+            sprintf("%s%s%s() in %s:%s",
+                $arg['class'] ?? '',
+                $arg['type'] ?? '',
+                $arg['function'] ?? '',
+                $arg['file'] ?? '',
+                $arg['line'] ?? ''
+            ),
+            $trace
         );
 
-        $body = ['message' => $errstr, 'error' => compact('errno', 'errstr', 'errfile', 'errline', 'backtrace')];
-        $bodyRaw = getenv('DEBUG_MODE') === 'true' ? $body : ['message' => 'Internal Server Error'];
+        $body = ['message' => $errstr, 'error' => compact('errno', 'errstr', 'errfile', 'errline', 'trace')];
+        $bodyRaw = (strpos(PHP_SAPI, 'cli') !== false || getenv('DEBUG_MODE') === 'true') ? $body : ['message' => 'Internal Server Error'];
         $bodyString = json_encode($bodyRaw, JSON_UNESCAPED_UNICODE);
         $bodyLen = strlen($bodyString);
 
@@ -85,12 +92,14 @@ final class ErrorHandler
         $this->logger->error($errstr, $body);
 
         // respond HTTP
-        if (!headers_sent()) {
+        if (strpos(PHP_SAPI, 'cli') === false && !headers_sent()) {
+            // @codeCoverageIgnoreStart
             header('HTTP/1.1 500 Internal Server Error');
             header('content-type: application/json; charset=utf-8');
             header("content-length: ${bodyLen}");
+            echo $bodyString;
+            // @codeCoverageIgnoreEnd
         }
-        echo $bodyString;
 
         return false;
     }

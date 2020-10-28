@@ -26,5 +26,6 @@
 
     <php>
         <const name="ENTRY_TIME" value="0.0"/>
+        <env name="DEBUG_MODE" value="true"/>
     </php>
 </phpunit>

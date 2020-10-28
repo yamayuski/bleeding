@@ -67,15 +67,25 @@ final class ProcessErrorMiddleware implements MiddlewareInterface
     {
         $code = $throwable->getCode();
         $response = $this->responseFactory->createResponse(($code > 100 && $code < 600) ? (int)$code : 500);
+        $backtrace = array_map(fn (array $arg) =>
+            sprintf("%s%s%s() in %s:%s",
+                $arg['class'] ?? '',
+                $arg['type'] ?? '',
+                $arg['function'] ?? '',
+                $arg['file'] ?? '',
+                $arg['line'] ?? ''
+            ),
+            $throwable->getTrace()
+        );
         $body = [
             'type' => get_debug_type($throwable),
             'message' => $throwable->getMessage(),
             'code' => $throwable->getCode(),
             'file' => $throwable->getFile(),
             'line' => $throwable->getLine(),
-            'context' => $throwable instanceof RuntimeException ? $throwable->getContext() : null,
+            'context' => $throwable instanceof RuntimeException ? $throwable->getContext() : [],
             'previous' => $throwable->getPrevious(),
-            'trace' => array_map(fn (array $arg) => "${arg['class']}${arg['type']}${arg['function']}() in ${arg['file']}:${arg['line']}", $throwable->getTrace()),
+            'trace' => $backtrace,
         ];
 
         $this->logger->error($throwable->getMessage(), $body);

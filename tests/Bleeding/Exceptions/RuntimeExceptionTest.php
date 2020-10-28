@@ -15,7 +15,7 @@ use Tests\TestCase;
 
 /**
  * @package Tests\Bleeding\Exceptions
- * @coversDefaultClass RuntimeException
+ * @coversDefaultClass \Bleeding\Exceptions\RuntimeException
  */
 final class RuntimeExceptionTest extends TestCase
 {
@@ -36,6 +36,7 @@ final class RuntimeExceptionTest extends TestCase
 
     /**
      * @test
+     * @covers ::__construct
      * @covers ::getContext
      */
     public function testGetContext()
@@ -46,8 +47,10 @@ final class RuntimeExceptionTest extends TestCase
 
     /**
      * @test
+     * @covers ::__construct
      * @covers ::create
      * @covers ::setContext
+     * @covers ::getContext
      */
     public function testCreate()
     {

@@ -9,16 +9,19 @@
 
 declare(strict_types=1);
 
-namespace Bleeding\Http\Attributes;
+namespace Bleeding\Routing\Attributes;
 
 use Attribute;
 
+use function trim;
+
 /**
- * Function that processes HTTP POST Request
- * @package Bleeding\Http\Attributes
+ * Function that processes HTTP GET Request
+ * @package Bleeding\Routing\Attributes
+ * @immutable
  */
 #[Attribute(Attribute::TARGET_FUNCTION | Attribute::TARGET_METHOD)]
-class Post
+class Get
 {
     private string $path;
 
@@ -29,7 +32,7 @@ class Post
      */
     public function __construct(string $path)
     {
-        $this->path = $path;
+        $this->path = '/' . trim($path, '/');
     }
 
     /**
@@ -49,6 +52,6 @@ class Post
      */
     public function getMethodName(): string
     {
-        return 'POST';
+        return 'GET';
     }
 }
