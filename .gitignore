@@ -5,6 +5,7 @@ _wildcard.example.com.pem
 _wildcard.example.com-key.pem
 vendor
 .phpunit.cache
+composer.lock
 
 # End App
 
