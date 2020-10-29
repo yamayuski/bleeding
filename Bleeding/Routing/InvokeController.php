@@ -79,6 +79,7 @@ final class InvokeController implements RequestHandlerInterface
             is_null($result), $result === '' =>
                 $response->getBody()->write('{}'),
             is_string($result), $result instanceof Stringable =>
+                /** @psalm-suppress PossiblyInvalidCast */
                 $response->getBody()->write((string)$result),
             default => throw new LogicException(
                 'Controller response must be ResponseInterface|JsonSerializable|Stringable|array|string|null, got ' . get_debug_type($result),

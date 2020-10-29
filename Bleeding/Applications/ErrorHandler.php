@@ -92,7 +92,7 @@ final class ErrorHandler
         $this->logger->error($errstr, $body);
 
         // respond HTTP
-        if (strpos(PHP_SAPI, 'cli') === false && !headers_sent()) {
+        if (strpos(PHP_SAPI, 'cli') === false && strpos(PHP_SAPI, 'phpdbg') === false && !headers_sent()) {
             // @codeCoverageIgnoreStart
             header('HTTP/1.1 500 Internal Server Error');
             header('content-type: application/json; charset=utf-8');

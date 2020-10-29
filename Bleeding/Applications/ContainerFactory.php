@@ -9,7 +9,6 @@ declare(strict_types=1);
 
 namespace Bleeding\Applications;
 
-use Bleeding\Http\HttpServiceProvider;
 use DI\Container;
 use DI\ContainerBuilder;
 
