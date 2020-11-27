@@ -1,6 +1,6 @@
 # Bleeding Edge PHP 8 Framework
 
-**Caution: This framework and PHP 8 is under development. You should not use in production!**
+**Caution: This framework is under development. You should not use in production!**
 
 ## Introduction
 
